@@ -1,0 +1,42 @@
+# See:
+# https://circleci.com/orbs/registry/orb/iynere/compare-url
+# https://github.com/iynere/compare-url
+# https://discuss.circleci.com/t/circle-compare-url-is-empty/24549/13
+jobs:
+  publish:
+    docker:
+      - image: circleci/circleci-cli
+    environment:
+      PARENT_DIR: src
+    steps:
+      - checkout
+      - compare-url/reconstruct
+      - run:
+          command: |
+            CIRCLE_COMPARE_URL=$(cat CIRCLE_COMPARE_URL.txt)
+            COMMIT_RANGE=$(echo $CIRCLE_COMPARE_URL | sed 's:^.*/compare/::g')
+            echo "Commit range: $COMMIT_RANGE"
+
+            for dir in $PARENT_DIR/*/; do
+              dirname=$(basename $dir)
+              if [[ $(git diff $COMMIT_RANGE --name-status | grep "$dirname") ]]; then
+                echo "packaging $dirname"
+                # Do whatever needed to package this directory.
+                export NEW_PACKAGES="$NEW_PACKAGES $dirname"
+              fi
+            done
+
+            if [ -n "$NEW_PACKAGES" ]; then
+              echo "publishing packages $NEW_PACKAGES"
+              # Do whatever needed to publish an index of updated packages.
+            fi
+          name: Publish modified directories
+          shell: /bin/bash -exo pipefail
+orbs:
+  compare-url: iynere/compare-url@0.4.10
+version: 2.1
+workflows:
+  publish-orbs:
+    jobs:
+      - publish
+  version: 2
