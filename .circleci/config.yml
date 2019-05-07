@@ -33,7 +33,7 @@ jobs:
               echo "nohing to publish. no changes detected"
             fi
           name: Publish modified directories
-          shell: /bin/bash -exo pipefail
+          shell: /bin/bash -eo pipefail
 orbs:
   compare-url: iynere/compare-url@0.4.10
 version: 2.1
