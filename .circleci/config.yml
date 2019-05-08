@@ -40,5 +40,10 @@ version: 2.1
 workflows:
   publish-orbs:
     jobs:
-      - publish
+      - publish:
+          filters:
+            tags:
+              ignore: /.*/
+            branches:
+              only: master
   version: 2
